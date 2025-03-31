@@ -3,10 +3,17 @@ import hackettLogo from '../images/logos/hackett-logo.svg'
 import clothingHeader from '../images/clothing-header.jpg'
 import fetchAllCategories from '../actions/fetch-all-categories.tsx';
 import fetchSubcategoriesById from '../actions/fetch-subcategories-by-id.tsx';
+import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { setCategory } from '../state/category/categorySlice.ts'
 
 function Header() {
   const [categories, setCategories] = useState([])
   const [subcategories, setSubcategories] = useState({})
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const getCategories = async () => {
@@ -24,6 +31,13 @@ function Header() {
     }
   }
   
+  const handleCategoryClick = (categoryId, categoryName) => {
+    dispatch(setCategory({ id: categoryId, name: categoryName}))
+  }
+  
+  const handleSubcategoryClick = (categoryId, subcategoryName) => {
+    dispatch(setCategory({ id: categoryId, name: subcategoryName}))
+  }
 
   return (
     <>
@@ -44,12 +58,16 @@ function Header() {
                       onMouseEnter={() => handleMouseEnter(category.id)}
                     >
                         <div className="category-menu flex justify-between cursor-pointer">
-                          <a href="/" className="hidden lg:block h-full text-sm leading-[4rem] uppercase text-[#1f2134] font-semibold hover:before:scale-x-100 hover:before:origin-left relative before:w-full before:h-0.5 before:origin-right before:transition-transform before:duration-300 before:scale-x-0 before:bg-[#1f2134] lg:before:absolute before:left-0 before:bottom-3">
+                          <Link 
+                            to={`/view-all/${category.name}`} 
+                            className="hidden lg:block h-full text-sm leading-[4rem] uppercase text-[#1f2134] font-semibold hover:before:scale-x-100 hover:before:origin-left relative before:w-full before:h-0.5 before:origin-right before:transition-transform before:duration-300 before:scale-x-0 before:bg-[#1f2134] lg:before:absolute before:left-0 before:bottom-3"
+                            onClick={() => handleCategoryClick(category.id, category.name)}
+                            >
                             {category.name}
-                          </a>
-                          <a className="lg:hidden h-full text-sm leading-[4rem] block uppercase text-[#1f2134] font-semibold hover:before:scale-x-100 hover:before:origin-left relative before:w-full before:h-0.5 before:origin-right before:transition-transform before:duration-300 before:scale-x-0 before:bg-[#1f2134] lg:before:absolute before:left-0 before:bottom-3">
+                          </Link>
+                          <Link className="lg:hidden h-full text-sm leading-[4rem] block uppercase text-[#1f2134] font-semibold hover:before:scale-x-100 hover:before:origin-left relative before:w-full before:h-0.5 before:origin-right before:transition-transform before:duration-300 before:scale-x-0 before:bg-[#1f2134] lg:before:absolute before:left-0 before:bottom-3">
                             {category.name}
-                          </a>
+                          </Link>
                         </div>
                         <div id="dropdown-header" className="dropdown-menu flex-row gap-4 pl-5 lg:justify-center bg-white absolute left-0 w-full max-h-[800px] lg:p-6 hidden opacity-0 lg:group-hover:opacity-100 lg:group-hover:flex">
                           <div className="w-full lg:w-2/5">
@@ -57,7 +75,7 @@ function Header() {
                             {subcategories[category.id]?.length > 0 ? (
                               subcategories[category.id].map((sub) => (
                                 <li key={sub.id} className="py-1">
-                                  <a href="/">{sub.name}</a>
+                                  <Link to={`/${category.name}/${sub.name}`} onClick={() => handleSubcategoryClick(sub.id, sub.name)}>{sub.name}</Link>
                                 </li>
                               ))
                             ) : (
