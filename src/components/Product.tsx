@@ -31,8 +31,6 @@ const Product = ({categoryId}) => {
         fetchProducts()
     }, [categoryId])
 
-    console.log(products);
-
     const groupedProducts: Record<number, Variant[]> = products.reduce((acc, product) => {
         if (!acc[product.product_id]) {
             acc[product.product_id] = [];
@@ -40,8 +38,6 @@ const Product = ({categoryId}) => {
         acc[product.product_id].push(product);
         return acc;
     }, {} as Record<number, typeof products>);
-
-    console.log(groupedProducts);
     
     const changeImage = (productId: string, colorCode: string, imageUrl: string) => {
         const photoImage = document.getElementById(`photo_${productId}`) as HTMLImageElement | null;       
@@ -68,7 +64,7 @@ const Product = ({categoryId}) => {
             return (
                 <div key={productId} id={`product_${productId}`} className="flex flex-col mb-10" data-product-id={productId}>
                     <div id="product_variant">
-                        <a href={`/${categoryId}/${firstVariant.product_name.replace(' ', '-')}/${productId}?color=${firstVariant.color_code}`}>
+                        <a href={`/${productId}?color=${firstVariant.color_code}`}>
                             <img
                                 id={`photo_${productId}`}
                                 className="object-cover mb-2 h-auto w-full"
