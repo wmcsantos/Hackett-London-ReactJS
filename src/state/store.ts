@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import categoryReducer from './category/categorySlice.ts'
-import { persistStore, persistReducer } from 'redux-persist'
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import { combineReducers } from 'redux'
 
@@ -10,11 +10,22 @@ const persistConfig = {
 }
 
 const rootReducer = combineReducers({
-    category: persistReducer(persistConfig, categoryReducer),
-})
+    category: categoryReducer,
+  })
+  
+  const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 export const store = configureStore({
-    reducer: rootReducer,
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+          serializableCheck: {
+            // Ignore redux-persist actions that include non-serializable values
+            ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+            ignoredActionPaths: ['register'],
+            ignoredPaths: ['_persist'], // optional: suppress for persist state too
+          },
+        }),
 })
   
 export const persistor = persistStore(store)

@@ -67,9 +67,7 @@ function Header() {
 const addEventListeners = () => {
     const isMobile = window.innerWidth < 1024
     const menuItems = document.querySelectorAll('nav ul > li.group')
-    console.log(menuItems)
     
-
     menuItems.forEach(li => {
         li.removeEventListener('click', toggleSubMenu) // Ensure no duplicate listeners
         if (isMobile) li.addEventListener('click', toggleSubMenu)
