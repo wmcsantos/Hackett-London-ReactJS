@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useUser } from '../context/UserContext.tsx'
 import updateUser from '../actions/update-user.tsx'
+import { useNavigate } from 'react-router-dom'
 
 const Account = () => {
     const { user, setUser } = useUser()
+    const navigate = useNavigate()
 
     const [personalDetailsForm, setPersonalDetailsForm] = useState({
         title: user?.title || '',
@@ -23,7 +25,7 @@ const Account = () => {
 
     const handlePersonalDetailsSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        
+
         const token = localStorage.getItem('token')
         if (!token) {
             return alert('You need to be logged in')
@@ -39,6 +41,12 @@ const Account = () => {
             alert('Something went wrong saving changes.')
             console.error(error)
         }
+    }
+
+    const handleSignOut = () => {
+        localStorage.removeItem('token')
+        setUser(null)
+        navigate('/')
     }
 
     useEffect(() => {
@@ -64,10 +72,10 @@ const Account = () => {
             ?> */}
             <div className="flex mx-8 pb-12 gap-4">
                 <div id="account-navigation" className="h-fit bg-white px-8 py-8">
-                    <ul className="flex flex-col gap-4">
+                    <ul className="flex flex-col gap-4 cursor-pointer">
                         <li><a href="/account" className="uppercase text-xs font-medium">My account</a></li>
                         <li><a href="/orders" className="uppercase text-xs font-medium">Order history</a></li>
-                        <li><a href="/logout" className="uppercase text-xs font-medium">Sign out</a></li>
+                        <li><a onClick={handleSignOut} className="uppercase text-xs font-medium">Sign out</a></li>
                     </ul>
                 </div>
                 <div className="flex flex-1">
