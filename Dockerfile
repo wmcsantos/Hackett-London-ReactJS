@@ -37,6 +37,7 @@ FROM nginx:latest
 
 # Copy the built files to Nginx
 COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80 for production
 EXPOSE 80

@@ -7,8 +7,10 @@ import { Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { setCategory } from '../state/category/categorySlice.ts'
+import { useUser } from '../context/UserContext.tsx'
 
 function Header() {
+  const { user, loading } = useUser()
   const [categories, setCategories] = useState([])
   const [subcategories, setSubcategories] = useState({})
 
@@ -183,14 +185,22 @@ window.addEventListener('resize', addEventListeners)
 
         <div className="utility-menu-icons flex h-full justify-center items-center gap-x-2">
             <div className="flex items-center relative overflow-hidden">
-                <p className="text-center m-4 text-black text-md font-medium">User</p>
-                <a href="/">
+                <p className="text-center m-4 text-black text-md font-medium">
+                  {loading ? 'Loading...' : user && user.first_name}
+                </p>
+                <a href={user ? "/account" : "/login"}>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4ZM10 13C7.79086 13 6 14.7909 6 17V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V17C18 14.7909 16.2091 13 14 13H10Z" fill="#383838"/>
+                  </svg>
                 </a>
             </div>
             <a href="/" className="flex">
-                <span id="cart-quantity">
-                    0
-                </span>
+              <svg className="w-8 h-8 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
+              </svg>
+              <span id="cart-quantity">
+                  0
+              </span>
             </a>
             <button data-collapse-toggle="navbar-default" onClick={toggleMenu} type="button" className="inline-flex items-center py-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-default" aria-expanded="false">
                 <span className="sr-only">Open main menu</span>
