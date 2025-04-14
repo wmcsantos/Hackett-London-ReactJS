@@ -8,22 +8,31 @@ import Products from './components/Products.tsx';
 import ProductDetail from './components/ProductDetail.tsx';
 import Login from './components/Login.tsx';
 import Account from './components/Account.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
 
 function App() {
   return (
-    <Router>
-      <UserProvider>
-        <Header />
-        <Routes>
-          <Route path='/' element={<Homepage /> } />
-          <Route path='/view-all/:category' element={<Products /> } />
-          <Route path='/:category/:subcategory' element={<Products /> } />
-          <Route path='/:productId' element={<ProductDetail /> } />
-          <Route path='/login' element={<Login /> } />
-          <Route path='/account' element={<Account /> } />
-        </Routes>
-      </UserProvider>
-    </Router>
+    <UserProvider>
+      <Router>
+          <Header />
+          <Routes>
+            <Route path='/' element={<Homepage /> } />
+            <Route path='/view-all/:category' element={<Products /> } />
+            <Route path='/:category/:subcategory' element={<Products /> } />
+            <Route path='/:productId' element={<ProductDetail /> } />
+            <Route path='/login' element={
+              <ProtectedRoute redirectIfAuthenticated={true}>
+                <Login /> 
+              </ProtectedRoute>
+            } />
+            <Route path='/account' element={
+              <ProtectedRoute>
+                <Account /> 
+              </ProtectedRoute>
+            } />
+          </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 

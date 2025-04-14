@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 const Account = () => {
     const { user, setUser } = useUser()
     const navigate = useNavigate()
-
+    
     const [personalDetailsForm, setPersonalDetailsForm] = useState({
         title: user?.title || '',
         first_name: user?.first_name || '',
