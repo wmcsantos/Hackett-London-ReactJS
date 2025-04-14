@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useUser } from '../context/UserContext.tsx'
 import updateUser from '../actions/update-user.tsx'
 import { useNavigate } from 'react-router-dom'
+import updateUserPassword from '../actions/update-user-password.tsx'
 
 const Account = () => {
     const { user, setUser } = useUser()
@@ -15,9 +16,23 @@ const Account = () => {
         email: user?.email || '',
     })
 
+    const [privacyForm, setPrivacyForm] = useState({
+        current_password: '',
+        new_password: '',
+        confirm_new_password: ''
+    })
+
     const handleChange = (e :React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
         setPersonalDetailsForm(prev => ({
+            ...prev,
+            [name]: value
+        }))
+    }
+
+    const handlePasswordChange = (e :React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target
+        setPrivacyForm(prev => ({
             ...prev,
             [name]: value
         }))
@@ -43,6 +58,26 @@ const Account = () => {
         }
     }
 
+    const handlePrivacyFormChange = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        
+        const token = localStorage.getItem('token')
+        if (!token) {
+            return alert('You need to be logged in')
+        }
+
+        const updatedData = privacyForm
+
+        try {
+            const updateUserPassord = await updateUserPassword(updatedData, token)
+            alert('Password successfully changed!')
+        } catch (error) {
+            alert('Something went wrong saving changes.')
+            console.error(error)
+        }
+
+    }
+
     const handleSignOut = () => {
         localStorage.removeItem('token')
         setUser(null)
@@ -63,13 +98,6 @@ const Account = () => {
     return (
         <div className="bg-gray-100">
             <h2 className="text-3xl text-center tracking-[0.1rem] pt-4 pb-12">Welcome back, {user?.title.charAt(0).toUpperCase() + user?.title.slice(1)} {user?.first_name}</h2>
-            {/* <!-- Indication of a succesfull update of the user fields in case the user has done the registration --> */}
-            {/* <?php 
-                if (isset($_SESSION['updateStatusMessage'])) {
-                    echo "<p className='text-center m-4 text-red-800 text-md font-medium'>{$_SESSION['updateStatusMessage']}</p>";
-                    unset($_SESSION['updateStatusMessage']);
-                }
-            ?> */}
             <div className="flex mx-8 pb-12 gap-4">
                 <div id="account-navigation" className="h-fit bg-white px-8 py-8">
                     <ul className="flex flex-col gap-4 cursor-pointer">
@@ -84,7 +112,6 @@ const Account = () => {
                             <p className="uppercase text-[#0e0f0f] tracking-[0.15rem] text-sm font-medium">Personal details</p>
                             <div className="border border-gray-200 py-8 px-4 mt-8">
                                 <form onSubmit={handlePersonalDetailsSave}>
-                                    {/* <input type="hidden" name="csrf_token" value="" /> */}
                                     <fieldset>
                                         <div className="flex flex-col w-full sm:w-1/2">
                                             <label className="text-sm" htmlFor="customer-title">
@@ -147,23 +174,22 @@ const Account = () => {
                         <div className="bg-white flex flex-1 flex-col px-8 py-8">
                             <p className="uppercase text-[#0e0f0f] tracking-[0.15rem] text-sm font-medium">Privacy</p>
                             <div className="border border-gray-200 py-8 px-4 mt-8">
-                                <form action="<?=ROOT?>/account" method="post">
-                                    <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>" />
+                                <form onSubmit={handlePrivacyFormChange}>
                                     <fieldset>
                                         <div className="flex flex-col sm:flex-row gap-12 w-full mt-12 mb-6">
                                             <div className="w-full sm:w-1/2 relative group">
                                                 <label className="flex items-center text-xs text-gray-500">Current Password</label>
-                                                <input type="password" name="current-password" required minLength={3} maxLength={1000} className="border-b w-full h-10 text-sm outline-none" />
+                                                <input type="password" name="current_password" required minLength={3} maxLength={1000} className="border-b w-full h-10 text-sm outline-none" onChange={handlePasswordChange} />
                                             </div>
                                         </div>
                                         <div className="flex flex-col sm:flex-row gap-12 w-full mt-12 mb-6">
                                             <div className="w-full sm:w-1/2 relative group">
                                                 <label className="flex items-center text-xs text-gray-500">New Password</label>
-                                                <input type="password" name="new-password" required minLength={3} maxLength={1000} className="border-b w-full h-10 text-sm outline-none" />
+                                                <input type="password" name="new_password" required minLength={3} maxLength={1000} className="border-b w-full h-10 text-sm outline-none" onChange={handlePasswordChange} />
                                             </div>
                                             <div className="w-full sm:w-1/2 relative group">
                                                 <label className="flex items-center text-xs text-gray-500">Confirm New Password</label>
-                                                <input type="password" name="confirm-new-password" required minLength={3} maxLength={1000} className="border-b w-full h-10 text-sm outline-none" />
+                                                <input type="password" name="confirm_new_password" required minLength={3} maxLength={1000} className="border-b w-full h-10 text-sm outline-none" onChange={handlePasswordChange} />
                                             </div>
                                         </div>
                                         <p className="text-xs text-gray-500 my-10">We will always have your back, Hackett London does not share or sell presonal info.</p>
