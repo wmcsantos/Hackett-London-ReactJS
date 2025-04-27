@@ -6,11 +6,20 @@ import fetchProductColors, { ProductColors } from '../actions/fetch-product-colo
 import fetchProductSizes, { ProductSizes } from '../actions/fetch-product-sizes.tsx'
 import { useSelector } from 'react-redux'
 import { RootState } from '../state/store.ts'
+import addItemToCart from '../actions/add-item-to-cart.tsx'
+import fetchProductVariant from '../actions/fetch-product-variant.tsx'
+import createCart from '../actions/create-cart.tsx'
+import { useCart } from '../context/CartContext.tsx'
+import fetchUserActiveCart from '../actions/fetch-user-active-cart.tsx'
+import fetchCartItemsCount from '../actions/fetch-cart-items-count.tsx'
 
 const ProductDetail = () => {
     const { productId } = useParams()
     const location = useLocation()
     const searchParams = new URLSearchParams(location.search)
+
+    const { setCartItemCount } = useCart()
+
     const colorCode = searchParams.get('color')
     const sizeName = searchParams.get('size')
 
@@ -19,11 +28,14 @@ const ProductDetail = () => {
     const [productSizes, setProductSizes] = useState<ProductSizes | null>([])
     const [productInfo, setProductInfo] = useState<Product | null>(null)
 
+    const [selectedSize, setSelectedSize] = useState<any>()
     const category = useSelector((state: RootState) => state.category.selectedCategory)
     const subcategory = useSelector((state: RootState) => state.category.selectedSubcategory)
 
     const selectedColor = productColors?.find((color) => color.code === colorCode)
-    const selectedSize = productSizes?.find((size) => size.code === sizeName)
+    // const selectedSize = productSizes?.find((size) => size.code === sizeName)
+
+
     
     useEffect(() => {
         // if (!productId || !colorCode) return
@@ -35,8 +47,6 @@ const ProductDetail = () => {
 
         const getProductSizes = async () => {
             const data = await fetchProductSizes(colorCode, productId)
-            console.log(data);
-            
             setProductSizes(data)
         }
 
@@ -49,19 +59,18 @@ const ProductDetail = () => {
             const data = await fetchProductColors(productId)           
             setProductColors(data)
         }
-
+        
         getProductImages()
         getProductInfo()
         getProductColors()
         getProductSizes()
     }, [])
-
+    
     function highlightSelectedSize(size)
     {
         const listItems = document.querySelectorAll('#sizes-list li');
         listItems.forEach(li => {
             const anchor = li.querySelector('a');
-            console.log(anchor);
             
             const sizeInAnchor = anchor?.innerText.trim();
             
@@ -75,16 +84,43 @@ const ProductDetail = () => {
         });
     }
 
-    function updateUrl(size)
+    function updateUrl(e, size)
     {
-
+        e.preventDefault();
+        
         const url = new URL(window.location.href);
-
+        const sizeId = e.currentTarget.getAttribute('data-size-id')
+        
         url.searchParams.set("size", size);
 
         window.history.pushState({}, '', url);
 
         highlightSelectedSize(size);
+        
+        setSelectedSize(sizeId)
+    }
+
+    const addToBag = async () => {
+        if (!selectedSize || !selectedColor) {
+            console.error('Size or Color not selected!');
+            return;
+        }
+
+        const productVariant = await fetchProductVariant(Number(productId), selectedSize, selectedColor.color_id)
+        console.log(productVariant.id);
+        const cart =  await createCart()
+        console.log(cart);
+        try {
+            await addItemToCart(cart.id, productVariant.id, 1, productVariant.price)
+            
+            const activeCart = await fetchUserActiveCart()
+            if (activeCart && activeCart.id) {
+                const data = await fetchCartItemsCount(activeCart.id)
+                setCartItemCount(data.total_cart_items)
+            }
+            } catch (error) {
+            console.error('Failed to add item or fetch cart count:', error)
+        }
     }
 
     return (
@@ -113,14 +149,13 @@ const ProductDetail = () => {
                     <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                         <li>
                         <div className="flex items-center">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
                             <a href="#" className="ms-1 text-sm capitalize font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">{category?.name}</a>
                         </div>
                         </li>
                         <li aria-current="page">
                         <div className="flex items-center">
                             <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
                             </svg>
                             <span className="capitalize ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">{subcategory || "Subcategory"}</span>
                         </div>
@@ -152,20 +187,20 @@ const ProductDetail = () => {
                     </div>
                     <div>
                         <ul id="sizes-list" className="flex gap-2 h-8 mt-4 mb-8 text-xs font-semibold text-center">
-                            <li className="w-10"><a href={productSizes[0]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[0]?.size_id} data-default-size-id={selectedSize === "XS" ? 1 : ""} onClick={productSizes[0]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('XS')} : undefined}  className={`${productSizes[0]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>XS</a></li>
-                            <li className="w-10"><a href={productSizes[1]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[1]?.size_id} data-default-size-id={selectedSize === "S" ? 1 : ""} onClick={productSizes[1]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('S')} : undefined}  className={`${productSizes[1]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>S</a></li>
-                            <li className="w-10"><a href={productSizes[2]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[2]?.size_id} data-default-size-id={selectedSize === "M" ? 1 : ""} onClick={productSizes[2]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('M')} : undefined}  className={`${productSizes[2]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>M</a></li>
-                            <li className="w-10"><a href={productSizes[3]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[3]?.size_id} data-default-size-id={selectedSize === "L" ? 1 : ""} onClick={productSizes[3]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('L')} : undefined}  className={`${productSizes[3]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>L</a></li>
-                            <li className="w-10"><a href={productSizes[4]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[4]?.size_id} data-default-size-id={selectedSize === "XL" ? 1 : ""} onClick={productSizes[4]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('XL')} : undefined}  className={`${productSizes[4]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>XL</a></li>
-                            <li className="w-10"><a href={productSizes[5]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[5]?.size_id} data-default-size-id={selectedSize === "XXL" ? 1 : ""} onClick={productSizes[5]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('XXL')} : undefined}  className={`${productSizes[5]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>XXL</a></li>
-                            <li className="w-10"><a href={productSizes[6]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[6]?.size_id} data-default-size-id={selectedSize === "3XL" ? 1 : ""} onClick={productSizes[6]?.stock !== 0 ? (e) => {e.preventDefault(); updateUrl('3XL')} : undefined}  className={`${productSizes[6]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>3XL</a></li>
+                            <li className="w-10"><a href={productSizes[0]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[0]?.size_id} data-default-size-id={selectedSize === "XS" ? 1 : ""} onClick={productSizes[0]?.stock !== 0 ? (e) => {updateUrl(e, 'XS')} : undefined}  className={`${productSizes[0]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>XS</a></li>
+                            <li className="w-10"><a href={productSizes[1]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[1]?.size_id} data-default-size-id={selectedSize === "S" ? 2 : ""} onClick={productSizes[1]?.stock !== 0 ? (e) => {updateUrl(e, 'S')} : undefined}  className={`${productSizes[1]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>S</a></li>
+                            <li className="w-10"><a href={productSizes[2]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[2]?.size_id} data-default-size-id={selectedSize === "M" ? 3 : ""} onClick={productSizes[2]?.stock !== 0 ? (e) => {updateUrl(e, 'M')} : undefined}  className={`${productSizes[2]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>M</a></li>
+                            <li className="w-10"><a href={productSizes[3]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[3]?.size_id} data-default-size-id={selectedSize === "L" ? 4 : ""} onClick={productSizes[3]?.stock !== 0 ? (e) => {updateUrl(e, 'L')} : undefined}  className={`${productSizes[3]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>L</a></li>
+                            <li className="w-10"><a href={productSizes[4]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[4]?.size_id} data-default-size-id={selectedSize === "XL" ? 5 : ""} onClick={productSizes[4]?.stock !== 0 ? (e) => {updateUrl(e, 'XL')} : undefined}  className={`${productSizes[4]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>XL</a></li>
+                            <li className="w-10"><a href={productSizes[5]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[5]?.size_id} data-default-size-id={selectedSize === "XXL" ? 6 : ""} onClick={productSizes[5]?.stock !== 0 ? (e) => {updateUrl(e, 'XXL')} : undefined}  className={`${productSizes[5]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>XXL</a></li>
+                            <li className="w-10"><a href={productSizes[6]?.stock !== 0 ? '' : undefined} data-size-id={productSizes[6]?.size_id} data-default-size-id={selectedSize === "3XL" ? 7 : ""} onClick={productSizes[6]?.stock !== 0 ? (e) => {updateUrl(e, '3XL')} : undefined}  className={`${productSizes[6]?.stock === 0 ? "text-gray-400" : "size-option hover:border hover:border-black"} block p-2`}>3XL</a></li>
                         </ul>
                     </div>
 
                     <a href="" className="uppercase underline underline-offset-1 text-sm">Size Guide</a>
                 </div>
 
-                <button id="add-to-cart" type="submit" value="Add to Bag" className="after:content-[url('<?=ROOT?>/images/icons/shopping-cart-icon.svg')] hover:after:content-[url('<?=ROOT?>/images/icons/shopping-cart-hover-icon.svg')] w-full uppercase p-2 bg-[#1f2134] text-white text-sm tracking-wider my-6 hover:bg-white hover:text-[#1f2134] hover:fill-black border-2 border-[#1f2134] transition-all duration-300">
+                <button id="add-to-cart" type="submit" onClick={addToBag} value="Add to Bag" className="after:content-[url('<?=ROOT?>/images/icons/shopping-cart-icon.svg')] hover:after:content-[url('<?=ROOT?>/images/icons/shopping-cart-hover-icon.svg')] w-full uppercase p-2 bg-[#1f2134] text-white text-sm tracking-wider my-6 hover:bg-white hover:text-[#1f2134] hover:fill-black border-2 border-[#1f2134] transition-all duration-300">
                     Add to bag
                 </button>
             </div>

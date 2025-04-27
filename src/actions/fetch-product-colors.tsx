@@ -1,3 +1,5 @@
+import { BACKEND_URL } from "../config.ts"
+
 export interface ProductColors {
   name: string
   code: string
@@ -7,7 +9,7 @@ export interface ProductColors {
 
 const fetchProductImages = async (productId): Promise<ProductColors[]> => {
   try {
-    const response = await fetch(`http://localhost:8000/products/product-colors?product_id=${productId}`, {
+    const response = await fetch(`${BACKEND_URL}/products/product-colors?product_id=${productId}`, {
         method: 'GET'
     })
 

@@ -8,11 +8,17 @@ import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { setCategory } from '../state/category/categorySlice.ts'
 import { useUser } from '../context/UserContext.tsx'
+import { useCart } from '../context/CartContext.tsx'
+import fetchCartItemsCount from '../actions/fetch-cart-items-count.tsx'
+import fetchUserActiveCart, { CartType } from '../actions/fetch-user-active-cart.tsx'
 
 function Header() {
   const { user, loading } = useUser()
+  const { cartItemCount, setCartItemCount } = useCart()
+
   const [categories, setCategories] = useState([])
   const [subcategories, setSubcategories] = useState({})
+  const [activeCart, setActiveCart] = useState<CartType | null>(null);
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -112,16 +118,38 @@ window.addEventListener('resize', addEventListeners)
           if (isMobile) {
               li.addEventListener('click', toggleSubMenu as EventListener);
           }
-      });
-  };
+      })
+  }
 
-  handleResize(); // Run once on mount
-  window.addEventListener('resize', handleResize);
+  handleResize() // Run once on mount
+  window.addEventListener('resize', handleResize)
 
   return () => {
-      window.removeEventListener('resize', handleResize);
-  };
+      window.removeEventListener('resize', handleResize)
+  }
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      const fetchUserCart = async () => {
+        try {
+          // Fetch the active cart for the logged-in user
+          const cart = await fetchUserActiveCart()
+          setActiveCart(cart)
+
+          if (cart && cart.id) {
+            // If the cart exists, fetch the cart items count
+            const data = await fetchCartItemsCount(cart.id)
+            setCartItemCount(data.total_cart_items)
+          }
+        } catch (error) {
+          console.error('Failed to fetch user cart:', error)
+        }
+      };
+
+      fetchUserCart()
+    }
+  }, [user, setCartItemCount])
 
   return (
     <>
@@ -199,7 +227,7 @@ window.addEventListener('resize', addEventListeners)
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
               </svg>
               <span id="cart-quantity">
-                  0
+                {cartItemCount}
               </span>
             </a>
             <button data-collapse-toggle="navbar-default" onClick={toggleMenu} type="button" className="inline-flex items-center py-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-default" aria-expanded="false">

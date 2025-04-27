@@ -1,5 +1,7 @@
+import { BACKEND_URL } from "../config.ts"
+
 export default async function updateUser(updatedData: any, token: string) {
-    const response = await fetch(`http://localhost:8000/users/me`, {
+    const response = await fetch(`${BACKEND_URL}/users/me`, {
         method: 'PUT',
         headers: {
             Authorization: `Bearer ${token}`,

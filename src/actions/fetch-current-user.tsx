@@ -1,10 +1,12 @@
+import { BACKEND_URL } from "../config.ts"
+
 const fetchCurrentUser = async () => {
     const token = localStorage.getItem('token')
     if (!token) {
         throw new Error('No token found!')
     }
 
-    const res = await fetch('http://localhost:8000/auth/users/me', {
+    const res = await fetch(`${BACKEND_URL}/auth/users/me`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,

@@ -1,3 +1,5 @@
+import { BACKEND_URL } from "../config.ts"
+
 export interface Login {
     access_token: string
     token_type: string
@@ -12,7 +14,7 @@ export interface Login {
         formData.append('username', email)
         formData.append('password', password)
 
-        const response = await fetch(`http://localhost:8000/auth/login`, {
+        const response = await fetch(`${BACKEND_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

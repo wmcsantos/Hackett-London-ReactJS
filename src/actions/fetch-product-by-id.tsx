@@ -1,3 +1,5 @@
+import { BACKEND_URL } from "../config.ts"
+
 export interface Product {
   id: number
   name: string
@@ -11,7 +13,7 @@ export interface Product {
 
 const fetchProductById = async (id: number): Promise<Product[]> => {
   try {
-    const response = await fetch(`http://localhost:8000/products/product/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/products/product/${id}`, {
         method: 'GET'
     })
 

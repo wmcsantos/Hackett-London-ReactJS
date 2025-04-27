@@ -97,7 +97,7 @@ const Account = () => {
     }, [user])
     return (
         <div className="bg-gray-100">
-            <h2 className="text-3xl text-center tracking-[0.1rem] pt-4 pb-12">Welcome back, {user?.title.charAt(0).toUpperCase() + user?.title.slice(1)} {user?.first_name}</h2>
+            <h2 className="text-3xl text-center tracking-[0.1rem] pt-4 pb-12">Welcome back, {user?.title && `${user?.title.charAt(0).toUpperCase()}${user?.title.slice(1)}`} {user?.first_name}</h2>
             <div className="flex mx-8 pb-12 gap-4">
                 <div id="account-navigation" className="h-fit bg-white px-8 py-8">
                     <ul className="flex flex-col gap-4 cursor-pointer">
