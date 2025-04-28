@@ -3,9 +3,11 @@ import { useUser } from '../context/UserContext.tsx'
 import updateUser from '../actions/update-user.tsx'
 import { useNavigate } from 'react-router-dom'
 import updateUserPassword from '../actions/update-user-password.tsx'
+import { useCart } from '../context/CartContext.tsx'
 
 const Account = () => {
     const { user, setUser } = useUser()
+    const { cartItemCount, setCartItemCount } = useCart()
     const navigate = useNavigate()
     
     const [personalDetailsForm, setPersonalDetailsForm] = useState({
@@ -80,6 +82,7 @@ const Account = () => {
 
     const handleSignOut = () => {
         localStorage.removeItem('token')
+        setCartItemCount(0)
         setUser(null)
         navigate('/')
     }
