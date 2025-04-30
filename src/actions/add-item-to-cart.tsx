@@ -12,7 +12,7 @@ const addItemToCart = async (
     }
 
     try {
-        const response = await fetch(`${BACKEND_URL}/carts/cart/${cart_id}/add-cart-item`, {
+        const response = await fetch(`${BACKEND_URL}/carts/cart/add-cart-item`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

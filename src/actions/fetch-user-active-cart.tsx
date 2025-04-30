@@ -9,7 +9,7 @@ export interface CartType {
   updated_at: string
 }
 
-const fetchUserActiveCart = async (): Promise<CartType> => {
+const fetchUserActiveCart = async (): Promise<CartType | null> => {
   const token = localStorage.getItem('token')
     if (!token) {
       throw new Error('No token found!')
@@ -25,7 +25,10 @@ const fetchUserActiveCart = async (): Promise<CartType> => {
       })
 
       if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`)
+        if (response.status === 404) {
+          return null
+        }
+        throw new Error(`HTTP error! Status: ${response.status}`)
       }
 
       return response.json()
