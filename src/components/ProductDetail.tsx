@@ -12,13 +12,17 @@ import createCart from '../actions/create-cart.tsx'
 import { useCart } from '../context/CartContext.tsx'
 import fetchUserActiveCart from '../actions/fetch-user-active-cart.tsx'
 import fetchCartItemsCount from '../actions/fetch-cart-items-count.tsx'
+import ShoppingCartDrawer from './ShoppingCartDrawer.tsx'
 
 const ProductDetail = () => {
     const { productId } = useParams()
     const location = useLocation()
     const searchParams = new URLSearchParams(location.search)
 
-    const { setCartItemCount } = useCart()
+    const { cartItems, fetchCart } = useCart()
+
+    console.log(cartItems);
+    
 
     const colorCode = searchParams.get('color')
     const sizeName = searchParams.get('size')
@@ -116,7 +120,7 @@ const ProductDetail = () => {
             const activeCart = await fetchUserActiveCart()
             if (activeCart && activeCart.id) {
                 const data = await fetchCartItemsCount(activeCart.id)
-                setCartItemCount(data.total_cart_items)
+                await fetchCart()
             }
             } catch (error) {
             console.error('Failed to add item or fetch cart count:', error)
@@ -246,31 +250,7 @@ const ProductDetail = () => {
         <div className="mt-16 bg-white mx-auto py-10">
             <img src="images/hackett-logo-footer.webp" alt="Hackett Logo Footer" className="bg-contain h-32 mx-auto" />
         </div>
-        {/* <!-- Overlay When Cart Drawer is Open --> */}
-        <div id="overlay" className="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-40"></div>
-        {/* <!-- Shopping Cart Drawer --> */}
-        <div id="cart-drawer" className="fixed top-16 right-0 w-[400px] h-full bg-white transform translate-x-full transition-transform duration-300 ease-in-out z-50">
-            <div className="p-6 pb-0 flex justify-between items-center">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.2rem]">In your bag</h2>
-                <button id="close-cart-drawer" className="text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            <div className="p-6">
-                <div id="cart-items">
-                    
-                </div>
-                <div className="mt-6">
-                    <p className="text-xs font-semibold">Subtotal <span id="cart-total" className=" right-0">€ 0.00</span></p>
-                </div>
-                <div className="mt-6 flex justify-between gap-2 text-center">
-                    <a href="/cart" className="basis-1/2 text-xs tracking-[0.2rem] text-[#1f2134] border border-[#1f2134] px-4 py-3 uppercase bg-white">Shopping bag</a>
-                    <a href="/checkout" className="basis-1/2 text-xs tracking-[0.2rem] text-white px-4 py-3 uppercase bg-[#1f2134]">Checkout</a>
-                </div>
-            </div>
-        </div>
+        <ShoppingCartDrawer cartItems={cartItems} />
         </>
     )
     }

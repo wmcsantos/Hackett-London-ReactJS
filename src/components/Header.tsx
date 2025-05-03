@@ -14,7 +14,7 @@ import fetchUserActiveCart, { CartType } from '../actions/fetch-user-active-cart
 
 function Header() {
   const { user, loading } = useUser()
-  const { cartItemCount, setCartItemCount } = useCart()
+  const { cartItemCount } = useCart()
 
   const [categories, setCategories] = useState([])
   const [subcategories, setSubcategories] = useState({})
@@ -140,7 +140,6 @@ window.addEventListener('resize', addEventListeners)
           if (cart && cart.id) {
             // If the cart exists, fetch the cart items count
             const data = await fetchCartItemsCount(cart.id)
-            setCartItemCount(data.total_cart_items)
           }
         } catch (error) {
           console.error('Failed to fetch user cart:', error)
@@ -149,7 +148,7 @@ window.addEventListener('resize', addEventListeners)
 
       fetchUserCart()
     }
-  }, [user, setCartItemCount])
+  }, [user])
 
   return (
     <>

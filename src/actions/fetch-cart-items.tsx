@@ -1,17 +1,14 @@
 import { BACKEND_URL } from '../config.ts'
+import { CartItem } from '../context/CartContext.tsx'
 
-export interface CartItemsCount {
-    total_cart_items: number
-}
-
-const fetchCartItemsCount = async (cartId): Promise<CartItemsCount> => {
+const fetchCartItems = async (cartId): Promise<CartItem[]> => {
     const token = localStorage.getItem('token')
     if (!token) {
         throw new Error('No token found!')
     }
 
     try {
-        const response = await fetch(`${BACKEND_URL}/carts/cart/${cartId}/cart-items/count`, {
+        const response = await fetch(`${BACKEND_URL}/carts/cart/${cartId}/cart-items`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -25,9 +22,9 @@ const fetchCartItemsCount = async (cartId): Promise<CartItemsCount> => {
 
         return response.json()
     } catch (error) {
-        console.error('Error fetching cart items count:', error);
+        console.error('Error fetching cart items:', error);
         throw error
     }
 }
 
-export default fetchCartItemsCount
+export default fetchCartItems
