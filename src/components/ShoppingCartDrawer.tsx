@@ -1,15 +1,31 @@
 import React, { useEffect, useState } from 'react'
+import deleteItemFromCart from '../actions/delete-item-from-cart.tsx'
+import fetchUserActiveCart from '../actions/fetch-user-active-cart.tsx'
 
-const ShoppingCartDrawer = ({ cartItems }) => {
+const ShoppingCartDrawer = ({ cartItems, drawerOpen }) => {
     const [isOpen, setIsOpen] = useState(false)
+    const [items, setItems] = useState(cartItems)
 
     useEffect(() => {
-        if (cartItems.length > 0) {
+        setItems(cartItems)
+        if (drawerOpen) {
             setIsOpen(true)
         }
-    }, [cartItems])
+    }, [drawerOpen])
 
     const closeDrawer = () => setIsOpen(false)
+
+    const deleteItem = async (e, itemId) => {
+        e.preventDefault()
+
+        const cart = await fetchUserActiveCart()
+        const cartId = cart?.id
+        
+        await deleteItemFromCart(cartId, itemId)
+
+        // Update UI
+        setItems(prevItems => prevItems.filter(item => item.id !== itemId))
+    }
 
     return (
         <>
@@ -39,14 +55,11 @@ const ShoppingCartDrawer = ({ cartItems }) => {
                 </div>
                 <div className="p-6">
                     <div id="cart-items">
-                        {cartItems.length === 0 ? (
+                        {items.length === 0 ? (
                             <p className="text-sm text-gray-500">Your cart is empty.</p>
                             ) : (
-                            cartItems.map((item, index) => (
-                                // <div key={index} className="text-sm mb-2">
-                                // {item.product_name} - €{item.price.toFixed(2)}
-                                // </div>
-                                <div className="flex relative gap-4 my-4">
+                            items.map((item, index) => (
+                            <div key={index} className="flex relative gap-4 my-4">
                                 <div id="product-variant">
                                     <div className="product-image">
                                         <a href="">
@@ -70,7 +83,7 @@ const ShoppingCartDrawer = ({ cartItems }) => {
                                     <div>
                                         <a href="" className="text-sm underline capitalize">Edit item</a>
                                         <span>|</span>
-                                        <a href="javascript:void(0)" id="remove-item" className="text-sm underline capitalize" data-cart-item-id={item.id}>Remove</a>
+                                        <a onClick={(e) => deleteItem(e, item.id)} id="remove-item" className="text-sm underline capitalize cursor-pointer" data-cart-item-id={item.id}>Remove</a>
                                     </div>
                                 </div>
                             </div>
@@ -78,7 +91,7 @@ const ShoppingCartDrawer = ({ cartItems }) => {
                         )}
                     </div>
                     <div className="mt-6">
-                        <p className="text-xs font-semibold">Subtotal <span id="cart-total" className=" right-0">€ {cartItems.reduce((acc, item) => acc + item.price, 0).toFixed(2)}</span></p>
+                        <p className="text-xs font-semibold">Subtotal <span id="cart-total" className=" right-0">€ {items.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}</span></p>
                     </div>
                     <div className="mt-6 flex justify-between gap-2 text-center">
                         <a href="/cart" className="basis-1/2 text-xs tracking-[0.2rem] text-[#1f2134] border border-[#1f2134] px-4 py-3 uppercase bg-white">Shopping bag</a>

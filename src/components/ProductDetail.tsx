@@ -20,10 +20,7 @@ const ProductDetail = () => {
     const searchParams = new URLSearchParams(location.search)
 
     const { cartItems, fetchCart } = useCart()
-
-    console.log(cartItems);
     
-
     const colorCode = searchParams.get('color')
     const sizeName = searchParams.get('size')
 
@@ -31,6 +28,7 @@ const ProductDetail = () => {
     const [productColors, setProductColors] = useState<ProductColors | null>([])
     const [productSizes, setProductSizes] = useState<ProductSizes | null>([])
     const [productInfo, setProductInfo] = useState<Product | null>(null)
+    const [drawerOpen, setDrawerOpen] = useState(false)
 
     const [selectedSize, setSelectedSize] = useState<any>()
     const category = useSelector((state: RootState) => state.category.selectedCategory)
@@ -111,9 +109,7 @@ const ProductDetail = () => {
         }
 
         const productVariant = await fetchProductVariant(Number(productId), selectedSize, selectedColor.color_id)
-        console.log(productVariant.id);
         const cart =  await createCart()
-        console.log(cart);
         try {
             await addItemToCart(cart.id, productVariant.id, 1, productVariant.price)
             
@@ -125,6 +121,7 @@ const ProductDetail = () => {
             } catch (error) {
             console.error('Failed to add item or fetch cart count:', error)
         }
+        setDrawerOpen(true)
     }
 
     return (
@@ -250,7 +247,7 @@ const ProductDetail = () => {
         <div className="mt-16 bg-white mx-auto py-10">
             <img src="images/hackett-logo-footer.webp" alt="Hackett Logo Footer" className="bg-contain h-32 mx-auto" />
         </div>
-        <ShoppingCartDrawer cartItems={cartItems} />
+        <ShoppingCartDrawer cartItems={cartItems} drawerOpen={drawerOpen} />
         </>
     )
     }
