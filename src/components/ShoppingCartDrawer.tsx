@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import deleteItemFromCart from '../actions/delete-item-from-cart.tsx'
 import fetchUserActiveCart from '../actions/fetch-user-active-cart.tsx'
+import { useCart } from '../context/CartContext.tsx'
 
 const ShoppingCartDrawer = ({ cartItems, drawerOpen }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [items, setItems] = useState(cartItems)
+
+    const { fetchCart } = useCart()
 
     useEffect(() => {
         setItems(cartItems)
@@ -25,6 +28,8 @@ const ShoppingCartDrawer = ({ cartItems, drawerOpen }) => {
 
         // Update UI
         setItems(prevItems => prevItems.filter(item => item.id !== itemId))
+
+        await fetchCart()
     }
 
     return (
